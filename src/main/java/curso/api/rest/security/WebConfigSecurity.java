@@ -3,6 +3,7 @@ package curso.api.rest.security;
 import curso.api.rest.service.ImplementacaoUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
@@ -29,6 +30,9 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter {
         /* Ativando a restrição a URL */
         .disable().authorizeRequests().antMatchers("/").permitAll()
                 .antMatchers("/index").permitAll()
+
+                .antMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 /* URL de Logout - Redireciona após o user deslogar do sistema */
                 .anyRequest().authenticated().and().logout().logoutSuccessUrl("/index")
 
@@ -37,7 +41,6 @@ public class WebConfigSecurity extends WebSecurityConfigurerAdapter {
 
                 /* Filtra requisições de login para autenticação */
                 .and().addFilterBefore(new JWTLoginFilter("/login", authenticationManager()), UsernamePasswordAuthenticationFilter.class)
-                
 
                 /* Filtra demais requisições para verificar a presença do TOKEN JWT no HEADER HTTP */
                 .addFilterBefore(new JwtApiAutenticacaoFilter(), UsernamePasswordAuthenticationFilter.class);

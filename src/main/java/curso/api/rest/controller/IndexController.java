@@ -4,6 +4,9 @@ import curso.api.rest.model.Telefone;
 import curso.api.rest.model.Usuario;
 import curso.api.rest.repository.UsuarioRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -28,14 +31,25 @@ public class IndexController {
         return new ResponseEntity(usuario.get(), HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{id}", produces = "application/json")
-    public ResponseEntity<Usuario> init(@PathVariable (value = "id") Long id) {
+    @GetMapping(value = "/{id}", produces = "application/json", headers = "X-API-Version=v1")
+   // @CacheEvict(value = "cacheusuarios", allEntries = true)
+   // @CachePut("cacheusuarios")
+    public ResponseEntity<Usuario> initV1(@PathVariable (value = "id") Long id) {
 
         Optional<Usuario> usuario = usuarioRepository.findById(id);
 
         return new ResponseEntity(usuario.get(), HttpStatus.OK);
     }
 
+    @GetMapping(value = "v2/{id}", produces = "application/json")
+    public ResponseEntity<Usuario> initV2(@PathVariable (value = "id") Long id) {
+
+        Optional<Usuario> usuario = usuarioRepository.findById(id);
+
+        return new ResponseEntity(usuario.get(), HttpStatus.OK);
+    }
+
+    @Cacheable("cacheusuarios")
     @GetMapping(value="/", produces = "application/json")
     public ResponseEntity<List<Usuario>> consultarTodos() {
 
