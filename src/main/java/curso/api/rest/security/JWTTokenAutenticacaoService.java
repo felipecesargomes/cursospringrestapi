@@ -57,27 +57,36 @@ public class JWTTokenAutenticacaoService {
     public Authentication getAuthentication(HttpServletRequest request, HttpServletResponse response) {
         /* Pega o token enviado no cabeçalho http */
         String token = request.getHeader(HEADER_STRING);
-        if (token != null) {
+        try {
+            if (token != null) {
 
-            String tokenLimpo = token.replace(TOKEN_PREFIX, "").trim();
+                String tokenLimpo = token.replace(TOKEN_PREFIX, "").trim();
 
-            /* Faz a validação do token do usuário na requisição */
-            String user = Jwts.parser().setSigningKey(SECRET) /* Bearer 87878we8we787w8e78wa7s878 */
-                    .parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody().getSubject();
-            if(user != null) {
-                Usuario usuario = ApplicationContextLoad.getApplicationContext()
-                        .getBean(UsuarioRepository.class).findUSerByLogin(user);
-                /* Retornar o usuário Logado */
+                /* Faz a validação do token do usuário na requisição */
+                String user = Jwts.parser().setSigningKey(SECRET) /* Bearer 87878we8we787w8e78wa7s878 */
+                        .parseClaimsJws(token.replace(TOKEN_PREFIX, "")).getBody().getSubject();
+                if(user != null) {
+                    Usuario usuario = ApplicationContextLoad.getApplicationContext()
+                            .getBean(UsuarioRepository.class).findUSerByLogin(user);
+                    /* Retornar o usuário Logado */
 
-                if(usuario != null) {
+                    if(usuario != null) {
 
-                    if (tokenLimpo.equalsIgnoreCase(usuario.getToken())) {
-                        return new UsernamePasswordAuthenticationToken(usuario.getLogin(), usuario.getSenha(), usuario.getAuthorities());
+                        if (tokenLimpo.equalsIgnoreCase(usuario.getToken())) {
+                            return new UsernamePasswordAuthenticationToken(usuario.getLogin(), usuario.getSenha(), usuario.getAuthorities());
+                        }
+
                     }
-
                 }
+            } /* Fim da condição do token */
+        }catch (io.jsonwebtoken.ExpiredJwtException e) {
+            try {
+                response.getOutputStream().println("Seu TOKEN está expirado, faça o login ou informe um novo TOKEN PARA A AUTENTICAÇÃO");
+            } catch (IOException ex) {
+
             }
         }
+
 
         liberacaoCors(response);
         return null; /* Não Autorizado */
